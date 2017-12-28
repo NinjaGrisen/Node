@@ -6,8 +6,12 @@ html
     link(rel="shortcut icon" type="image/png" href="/images/icons/doughnut.png")
     meta(name="viewport" content="width=device-width, initial-scale=1")
   body
+    pre=h.dump(user)
     block header
       header.top
+        if user && user.admin
+          //- fix admin 
+          h1 admin
         nav.nav
           .nav__section.nav__section--pages
             li.nav__item
