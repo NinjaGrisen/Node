@@ -12,13 +12,23 @@ mixin storeForm(store = {})
         label(for="address") Address
         input(type="text" id="address" name="location[address]" 
             value=(store.location && store.location.address))
-            
 
         label(for="lng") Address Lng
         input(type="text" id="lng" name="location[coodrinates][0]" 
                 value=(store.location && store.location.coodrinates[0]) required)
         input(type="text" id="lat" name="location[coodrinates][1]" 
                 value=(store.location && store.location.coodrinates[1]) required)
+
+        label(for="city") City
+        input(type="text" id="city" name="location[city]" 
+            value=(store.location && store.location.city))
+            
+
+        label(for="Citylng") Address City Lng
+        input(type="text" id="cityLng" name="location[cityCoodrinates][0]" 
+                value=(store.location && store.location.cityCoodrinates[0]) required)
+        input(type="text" id="cityLat" name="location[cityCoodrinates][1]" 
+                value=(store.location && store.location.cityCoodrinates[1]) required)
 
         - const choices = ["Wifi", "open late", "Family friendly", "Vegatarian", "Licensed"]
         - const tags = store.tags || []

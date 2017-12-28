@@ -65,9 +65,23 @@ exports.editStore = async (req, res) => {
 exports.updateStore = async (req, res) => {
     req.body.location.type = "Point";
     const store = await Store.findOneAndUpdate({_id: req.params.id}, req.body, {
-        new: true, //return the new store instead of the old one
-        runValidators: true //only runs on creations if not true
+        new: true,
+        runValidators: true
     }).exec();
     req.flash('success', `Successfully updated <strong>${store.name} </strong> <a href="/stores/${store.slug}">View store</a>`);
     res.redirect(`/stores/${store._id}/edit`)
 };
+
+exports.getStoreBySlug = async (req, res, next) => {
+    const store = await Store.findOne({ slug: req.params.slug });
+    if(!store) {
+        return next();
+    }
+    res.render('store', {store, title: store.name});
+}
+
+exports.getStoreByTag = async(req, res) => {
+    const tags = await Store.getTagsList();
+    const tag = req.params.tag;
+    res.render('tag', {tags, title: 'Tags', tag});
+}

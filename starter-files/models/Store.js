@@ -27,6 +27,14 @@ const storeSchema = new mongoose.Schema( {
             type: Number,
             required: 'You must supply coordinates!'
         }],
+        cityCoodrinates: [{
+            type: Number,
+            required: 'You must supply coordinates!'
+        }],
+        city: {
+            type: String,
+            required: 'You must supply an city!'
+        },
         address: {
             type: String,
             required: 'You must supply an address!'
@@ -36,14 +44,35 @@ const storeSchema = new mongoose.Schema( {
 
 });
 
-storeSchema.pre('save', function(next) {
+storeSchema.pre('save', async function(next) {
     if(!this.isModified('name')) {
         return next();
     }
     this.slug = slug(this.name);
-    next();
 
-    //Make it possible to add multiple stores with the same name
+    const slugRegEx = new RegExp(`^(${this.slug})((-[0-9]*$)?)$`, 'i')
+    const storesWithSlug = await this.constructor.find({slug: slugRegEx});
+
+    if(storesWithSlug.length) {
+        this.slug = `${this.slug}-${storesWithSlug.length + 1}`;
+    }
+
+    next();
 });
+
+storeSchema.statics.getTagsList = function() {
+    return this.aggregate([
+        { $unwind: '$tags'},
+        { $group: {_id: '$tags', count: {$sum: 1 }}},
+        { $sort: {count: -1}}
+    ]);
+}
+
+storeSchema.statics.getCities = function() {
+    return this.aggregate([
+        { $unwind: '$location.city'},
+        { $group: {_id: '$location.city', count: {$sum: 1 }}}
+    ]);
+}
 
 module.exports = mongoose.model('Store', storeSchema);
