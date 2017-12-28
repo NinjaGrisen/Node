@@ -33,7 +33,7 @@ const storeSchema = new mongoose.Schema( {
         }],
         city: {
             type: String,
-            required: 'You must supply an city!'
+            //required: 'You must supply an city!'
         },
         address: {
             type: String,
@@ -46,6 +46,13 @@ const storeSchema = new mongoose.Schema( {
         ref: 'User',
         required: 'You must supply an author'
     }
+});
+
+storeSchema.index({
+    name: 'text',
+    description: 'text',
+    "location.city": 'text',
+    "location.address": 'text'
 });
 
 storeSchema.pre('save', async function(next) {

@@ -57,15 +57,17 @@ exports.getStores = async (req, res) => {
     const stores = await Store.find();
     res.render('stores', {title: 'Stores', stores});
 };
-const confirmOwner = (store, user) => {
-    if(!store.author.equals(user._id)) {
-        throw Error('You must have created this page to edit it!');
+const confirmOwnerOrAdmin = (store, user) => {
+    if(!user.admin) {    
+        if(!store.author.equals(user._id)) {
+            throw Error('You must have created this page to edit it!');
+        }
     }
 }
 exports.editStore = async (req, res) => {
     
     const store = await Store.findOne({_id: req.params.id});
-    confirmOwner(store, req.user);
+    confirmOwnerOrAdmin(store, req.user);
     res.render('editStore', {title: `Edit ${store.name}`, store});
 };
 
@@ -76,7 +78,9 @@ exports.updateStore = async (req, res) => {
         new: true,
         runValidators: true
     }).exec();
-    req.flash('success', `Successfully updated <strong>${store.name} </strong> <a href="/stores/${store.slug}">View store</a>`);
+    req.flash('success', 
+        `Successfully updated <strong>${store.name} 
+        </strong> <a href="/store/${store.slug}">View store</a>`);
     res.redirect(`/stores/${store._id}/edit`)
 };
 
@@ -97,4 +101,22 @@ exports.getStoreByTag = async (req, res) => {
     const [tags, stores] = await Promise.all([tagsPromise, storePromise]);
 
     res.render('tag', {tags, title: 'Tags', tag, stores});
-}
+};
+
+exports.searchStores = async (req, res) => {
+    const stores = await Store
+    .find({
+        $text: {
+            $search: req.query.q
+        }
+    }, {
+        score: { $meta: 'textScore' }
+    })
+    .sort({
+        score: { $meta: 'textScore' }
+    })
+    .limit(5);
+
+    
+    res.json(stores);
+};
