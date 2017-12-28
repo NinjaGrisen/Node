@@ -1031,9 +1031,16 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 function searchResultsHTML(stores) {
     return stores.map(function (store) {
-        console.log(store.name);
+        console.log(store.location.city);
         return '\n            <a href="/store/' + store.slug + '" class="search__result">\n                <strong>' + store.name + '</strong>\n            </a>\n        ';
     }).join("");
+}
+
+function searchCityResultsHTML(stores) {
+    //Make this more rubust if there is more than one city hit
+    if (stores.length > 1) {
+        return '\n            <a href="/store/' + stores[0].location.city + '" class="search__result">\n                <strong>' + stores[0].location.city + '</strong>\n            </a>\n        ';
+    }
 }
 
 function typeAhead(search) {
@@ -1054,7 +1061,10 @@ function typeAhead(search) {
 
         _axios2.default.get('/api/search?q=' + this.value).then(function (res) {
             if (res.data.length) {
-                searchResult.innerHTML = _dompurify2.default.sanitize(searchResultsHTML(res.data));
+                searchResult.innerHTML = _dompurify2.default.sanitize(searchCityResultsHTML(res.data));
+
+                searchResult.innerHTML += _dompurify2.default.sanitize(searchResultsHTML(res.data));
+
                 return;
             }
             searchResult.innerHTML = _dompurify2.default.sanitize('\n                    <div class="search__result">No results for <strong>' + _this.value + ' found!</strong></div>\n                    ');

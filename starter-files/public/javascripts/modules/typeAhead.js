@@ -4,13 +4,24 @@ import dompurify from 'dompurify';
 
 function searchResultsHTML(stores) {
     return stores.map(store => {
-        console.log(store.name)
+        console.log(store.location.city)
         return `
             <a href="/store/${store.slug}" class="search__result">
                 <strong>${store.name}</strong>
             </a>
         `;
     }).join("");
+}
+
+function searchCityResultsHTML(stores) {
+    //Make this more rubust if there is more than one city hit
+    if(stores.length > 1) {
+        return `
+            <a href="/store/${stores[0].location.city}" class="search__result">
+                <strong>${stores[0].location.city}</strong>
+            </a>
+        `;
+    }
 }
 
 function typeAhead(search) {
@@ -32,7 +43,11 @@ function typeAhead(search) {
             .then(res => {
                 if(res.data.length) {                   
                     searchResult.innerHTML = 
+                    dompurify.sanitize(searchCityResultsHTML(res.data));
+                     
+                    searchResult.innerHTML += 
                     dompurify.sanitize(searchResultsHTML(res.data));
+                    
                     return;
                 }
                 searchResult.innerHTML = dompurify.sanitize(`
