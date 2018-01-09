@@ -1,8 +1,10 @@
 const mongoose = require('mongoose');
 const Store = mongoose.model('Store');
+const User = mongoose.model('User');
 const multer = require('multer');
 const jimp = require('jimp');
 const uuid = require('uuid');
+
 
 const multerOptions = {
     storage: multer.memoryStorage(),
@@ -54,8 +56,28 @@ exports.createStore = async (req, res) => {
 };
 
 exports.getStores = async (req, res) => {
-    const stores = await Store.find();
-    res.render('stores', {title: 'Stores', stores});
+    const page = req.params.page || 1;
+    const limit = 4;
+    const skip = (page * limit) - limit;
+
+    const storesPromise = Store
+        .find()
+        .skip(skip)
+        .limit(limit)
+        .sort({ created: 'desc'});
+    
+    const countPromise = Store.count();
+
+    const [stores, count] = await Promise.all([storesPromise, countPromise]);
+    const pages = Math.ceil(count / limit);
+
+    if(!stores.length && skip) {
+        req.flash('info', `Hey you asked for page ${page}. That does not exist so I put you on ${pages}`)
+        res.redirect(`/stores/page/${pages}`);
+        return;
+    }
+
+    res.render('stores', {title: 'Stores', stores, page, pages, count});
 };
 const confirmOwnerOrAdmin = (store, user) => {
     if(!user.admin) {    
@@ -86,7 +108,7 @@ exports.updateStore = async (req, res) => {
 
 exports.getStoreBySlug = async (req, res, next) => {
     const store = await Store.findOne({ slug: req.params.slug })
-    .populate('author');
+    .populate('author reviews');
     if(!store) {
         return next();
     }
@@ -116,7 +138,28 @@ exports.searchStores = async (req, res) => {
         score: { $meta: 'textScore' }
     })
     .limit(5);
-
-    
+  
     res.json(stores);
+};
+
+exports.heartStore = async(req, res) => {
+    const hearts = req.user.bookmarked.map(obj => obj.toString());
+
+    const operator = hearts.includes(req.params.id) ? '$pull' : '$addToSet';
+    const user = await User
+        .findByIdAndUpdate(
+            req.user._id, 
+            { [operator]: {bookmarked: req.params.id} },
+            { new: true }
+    );
+    res.json(user);
+};
+
+exports.getHearts = async(req, res) => {
+
+    const stores = await Store.find({
+        _id: { $in: req.user.bookmarked }
+    });
+
+    res.render('stores', {title: 'Hearted stores', stores} );
 };

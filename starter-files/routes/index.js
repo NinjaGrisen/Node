@@ -3,12 +3,18 @@ const router = express.Router();
 const storeController = require('../controllers/storeController');
 const userController = require('../controllers/userController');
 const authController = require('../controllers/authController');
+const reviewController = require('../controllers/reviewController');
 const { catchErrors } = require('../handlers/errorHandlers');
+
 
 router.get('/', 
   catchErrors(storeController.getStores));
 router.get('/stores',
   catchErrors(storeController.getStores));
+
+router.get('/stores/page/:page',
+  catchErrors(storeController.getStores));
+
 router.get('/stores/:id/edit',
   catchErrors(storeController.editStore));
 router.get('/add',
@@ -65,9 +71,23 @@ router.post('/account/reset/:token',
   authController.confirmedPassords,
   catchErrors(authController.update));
 
+router.get('/hearts', 
+  authController.isLoggedIn,
+  catchErrors(storeController.getHearts));
+
+router.post('/reviews/:id',
+  authController.isLoggedIn,
+  catchErrors(reviewController.addReview));
+
+
 //Api end points
 router.get('/api/search', 
 catchErrors(storeController.searchStores));
+
+router.post('/api/stores/:id/heart',
+  catchErrors(storeController.heartStore));
+  
+
 
 
 module.exports = router;

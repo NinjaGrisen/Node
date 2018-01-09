@@ -6,7 +6,6 @@ html
     link(rel="shortcut icon" type="image/png" href="/images/icons/doughnut.png")
     meta(name="viewport" content="width=device-width, initial-scale=1")
   body
-    pre=h.dump(user)
     block header
       header.top
         if user && user.admin
@@ -30,7 +29,7 @@ html
             if user
               li.nav__item: a.nav__link(href="/hearts", class=(currentPath.startsWith('/hearts') ? 'nav__link--active' : ''))
                 != h.icon('heart')
-                span.heart-count #{user.hearts && user.hearts.length}
+                span.heart-count #{user.bookmarked && user.bookmarked.length}
               li.nav__item: a.nav__link(href="/logout", class=(currentPath.startsWith('/logout') ? 'nav__link--active' : ''))
                 != h.icon('logout')
                 span Logout

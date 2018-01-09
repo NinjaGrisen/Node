@@ -22,7 +22,13 @@ const userSchema = new Schema({
     },
     admin: Boolean,
     resetPasswordToken: String,
-    resetPasswordExpires: Date
+    resetPasswordExpires: Date,
+    bookmarked: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'Store'
+        }
+    ]
 });
 
 //Allow user to add image
